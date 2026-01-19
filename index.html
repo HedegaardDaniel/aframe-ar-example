@@ -2,13 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR Snowman Fix</title>
+    <title>AR Snowman Final</title>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <style>
       #ar-button {
         position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
         z-index: 9999; padding: 20px 40px; background: #000; color: #fff;
-        border: 2px solid #fff; border-radius: 50px; font-size: 18px; cursor: pointer;
+        border: 2px solid #fff; border-radius: 50px; font-size: 18px;
       }
     </style>
   </head>
@@ -18,6 +18,7 @@
 
     <a-scene 
       webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
+      ar-hit-test="target: #reticle;"
       renderer="alpha: true; colorManagement: true;"
       vr-mode-ui="enabled: false"
       loading-screen="enabled: false"
@@ -27,12 +28,8 @@
         <a-asset-item id="snowman-model" src="assets/models/Snowman.gltf"></a-asset-item>
       </a-assets>
 
-      <a-entity id="reticle" 
-                ar-hit-test="target: #reticle"
-                geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.07" 
-                material="color: #00FF00; shader: flat" 
-                rotation="-90 0 0"
-                visible="false">
+      <a-entity id="reticle" visible="false">
+        <a-ring color="#00FF00" radius-inner="0.04" radius-outer="0.07" rotation="-90 0 0"></a-ring>
       </a-entity>
 
       <a-light type="ambient" intensity="1"></a-light>
@@ -41,14 +38,12 @@
 
     <script>
       console.log("GitHub Pages commit 31");
-      // We wait for the window to load so 'ar-button' is not null
       window.addEventListener('load', () => {
         const sceneEl = document.querySelector('a-scene');
         const btn = document.querySelector('#ar-button');
         const reticle = document.querySelector('#reticle');
 
         btn.addEventListener('click', () => {
-          // Force AR mode
           sceneEl.enterVR(true); 
         });
 
@@ -58,21 +53,23 @@
           }
         });
 
-        // This event is the "Bonus Task" - spawning on touch
         sceneEl.addEventListener('ar-hit-test-select', () => {
           if (reticle.getAttribute('visible')) {
-            const snowman = document.createElement('a-entity');
+            const spawnPos = reticle.getAttribute('position');
             
-            // Set attributes
-            snowman.setAttribute('gltf-model', '#snowman-model');
-            snowman.setAttribute('scale', '0.2 0.2 0.2');
+            // Create the entity
+            const newObj = document.createElement('a-entity');
             
-            // Get position from reticle
-            const pos = reticle.getAttribute('position');
-            snowman.setAttribute('position', pos);
+            // Try to use Snowman, otherwise use a Box
+            newObj.setAttribute('gltf-model', '#snowman-model');
+            newObj.setAttribute('geometry', 'primitive: box; width: 0.2; height: 0.2; depth: 0.2');
+            newObj.setAttribute('material', 'color: white');
             
-            sceneEl.appendChild(snowman);
-            console.log("Snowman spawned at:", pos);
+            newObj.setAttribute('scale', '0.2 0.2 0.2');
+            newObj.setAttribute('position', spawnPos);
+            
+            sceneEl.appendChild(newObj);
+            console.log("Spawned at:", spawnPos);
           }
         });
       });
