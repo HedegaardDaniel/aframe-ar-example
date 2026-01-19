@@ -1,0 +1,155 @@
+{
+  "asset": {
+    "generator": "glTF-Transform v4.2.1",
+    "version": "2.0"
+  },
+  "accessors": [
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 4338,
+      "max": [
+        0.7811717987060547,
+        2.101127862930298,
+        0.48906686902046204
+      ],
+      "min": [
+        -0.8519207239151001,
+        -0.028958819806575775,
+        -0.5000069737434387
+      ],
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 4338,
+      "bufferView": 0,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 4338,
+      "bufferView": 0,
+      "byteOffset": 24
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5125,
+      "count": 4338,
+      "bufferView": 1,
+      "byteOffset": 0
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 138816,
+      "byteStride": 32,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 138816,
+      "byteLength": 17352,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/png",
+      "uri": "baseColor.png"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "buffer.bin",
+      "byteLength": 156168
+    }
+  ],
+  "materials": [
+    {
+      "name": "Snowman",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.64000004529953,
+          0.64000004529953,
+          0.64000004529953,
+          1
+        ],
+        "roughnessFactor": 0.690034806728363,
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 0
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Snowman",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 3
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "RootNode",
+      "children": [
+        1
+      ]
+    },
+    {
+      "name": "Snowman",
+      "extras": {
+        "UserProperties": "",
+        "IsNull": false,
+        "DefaultAttributeIndex": 0,
+        "InheritType": 1
+      },
+      "rotation": [
+        -3.090856263689424e-8,
+        0.7071080722833399,
+        0.7071054900873963,
+        3.090867550826708e-8
+      ],
+      "mesh": 0
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0,
+  "extensionsUsed": [
+    "KHR_materials_volume"
+  ]
+}
