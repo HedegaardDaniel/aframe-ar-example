@@ -2,28 +2,29 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR Snowman - Auto Build</title>
+    <title>AR Snowman - Basic Build</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
-      #overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        display: flex; align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.8); color: white; z-index: 999;
-        font-family: sans-serif; text-align: center; padding: 20px;
+      #controls {
+        position: fixed; top: 10px; left: 10px; z-index: 9999;
+        background: rgba(0,0,0,0.8); color: white; padding: 10px;
+        font-family: monospace; pointer-events: none;
+      }
+      #start-btn {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 10000; padding: 20px 40px; font-size: 20px;
+        background: #222; color: #fff; border: 2px solid #fff; cursor: pointer;
       }
     </style>
   </head>
   <body style="margin: 0; overflow: hidden;">
 
-    <div id="overlay">
-      <h1>Winter AR</h1>
-      <p>Tap anywhere on this black screen <br> to activate your camera.</p>
-    </div>
+    <div id="controls">Status: Ready.</div>
+    <button id="start-btn">CLICK TO START AR</button>
 
     <a-scene 
-      webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
-      ar-hit-test="target: #reticle;"
-      renderer="alpha: true; colorManagement: true;"
+      webxr="optionalFeatures: hit-test, local-floor"
+      renderer="alpha: true"
       vr-mode-ui="enabled: false">
       
       <a-assets>
@@ -39,41 +40,46 @@
     </a-scene>
 
     <script>
-      console.log("GitHub Pages commit 35");
+      console.log("GitHub Pages commit 36");
       const sceneEl = document.querySelector('a-scene');
-      const overlay = document.getElementById('overlay');
+      const btn = document.getElementById('start-btn');
+      const status = document.getElementById('controls');
 
-      // 1. Force AR on first tap
-      window.addEventListener('click', () => {
-        if (!sceneEl.is('ar-mode')) {
-          sceneEl.enterVR();
-        }
+      // 1. Explicitly trigger the AR session via button
+      btn.addEventListener('click', function() {
+        status.innerText = "Status: Attempting AR...";
+        sceneEl.enterVR(); 
       });
 
-      // 2. Clear overlay when AR starts
-      sceneEl.addEventListener('enter-vr', () => {
+      // 2. Detect when session actually starts
+      sceneEl.addEventListener('enter-vr', function() {
         if (sceneEl.is('ar-mode')) {
-          overlay.style.display = 'none';
+          status.innerText = "Status: AR ACTIVE! Scan floor.";
+          btn.style.display = 'none';
+          // Start looking for the floor
+          sceneEl.setAttribute('ar-hit-test', 'target: #reticle;');
+        } else {
+          status.innerText = "Status: Failed. Entered VR instead.";
         }
       });
 
-      // 3. Spawning Logic
-      sceneEl.addEventListener('ar-hit-test-select', () => {
+      // 3. Spawning
+      sceneEl.addEventListener('ar-hit-test-select', function() {
         const reticle = document.getElementById('reticle');
         if (reticle.getAttribute('visible')) {
           const spawnPos = reticle.getAttribute('position');
           const snowman = document.createElement('a-entity');
           
-          // Use model with box fallback
           snowman.setAttribute('gltf-model', '#snowman-model');
+          // Fallback box
           snowman.setAttribute('geometry', 'primitive: box; width: 0.1; height: 0.1; depth: 0.1');
           snowman.setAttribute('material', 'color: white');
           
           snowman.setAttribute('position', spawnPos);
           snowman.setAttribute('scale', '0.2 0.2 0.2');
           sceneEl.appendChild(snowman);
+          status.innerText = "Status: Snowman Placed!";
         }
       });
     </script>
   </body>
-</html>
