@@ -2,69 +2,60 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR Snowmen • A-Frame</title>
+    <title>AR Test</title>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script>
-      AFRAME.registerComponent('spawn-on-select', {
+      console.log("GitHub Pages commit 22");
+      AFRAME.registerComponent('tap-to-spawn', {
         init: function () {
-          const scene = this.el;
-          const reticle = document.querySelector('#reticle');
-
-          scene.addEventListener('ar-hit-test-select', () => {
-            // Only spawn if the reticle is actually visible (found a surface)
-            if (!reticle || !reticle.getAttribute('visible')) return;
-
-            const template = document.querySelector('#snowman');
-            const newSnowman = document.createElement('a-entity');
-            
-            // Set model and scale
-            newSnowman.setAttribute('gltf-model', template.getAttribute('gltf-model'));
-            newSnowman.setAttribute('scale', template.getAttribute('scale'));
-            newSnowman.setAttribute('visible', 'true');
-
-            // IMPORTANT: Copy position/rotation from the reticle's current world position
-            newSnowman.setAttribute('position', reticle.getAttribute('position'));
-            newSnowman.setAttribute('rotation', reticle.getAttribute('rotation'));
-
-            scene.appendChild(newSnowman);
-            console.log("GitHub Pages commit 21");
+          this.el.addEventListener('click', (evt) => {
+            // This works in both AR (via hit-test) and Desktop (via mouse)
+            if (this.el.is('ar-mode')) {
+               const reticle = document.querySelector('#reticle');
+               if (reticle.getAttribute('visible')) {
+                 this.spawn(reticle.getAttribute('position'));
+               }
+            } else {
+               // Desktop fallback: spawn at a random spot
+               this.spawn("-1 0.5 -3");
+            }
           });
+        },
+        spawn: function (pos) {
+          const newBox = document.createElement('a-box');
+          newBox.setAttribute('position', pos);
+          newBox.setAttribute('color', 'orange');
+          newBox.setAttribute('scale', '0.2 0.2 0.2');
+          this.el.appendChild(newBox);
         }
       });
     </script>
   </head>
+  <body>
+    <a-scene 
+      webxr="requiredFeatures: hit-test, local-floor; optionalFeatures: dom-overlay; overlayElement: #overlay"
+      renderer="alpha: true; colorManagement: true;"
+      cursor="rayOrigin: mouse"
+      tap-to-spawn
+      background="color: #ECECEC">
 
-  <body style="margin:0; overflow:hidden;">
-    <a-scene
-      renderer="alpha: true; antialias: true; colorManagement: true;"
-      xr-mode-ui="enabled: true"
-      webxr="optionalFeatures: hit-test"
-      ar-hit-test="target: #reticle"
-      spawn-on-select
-    >
-      <a-assets>
-        <a-asset-item id="snowman-gltf" src="assets/models/Snowman.gltf"></a-asset-item>
-      </a-assets>
-
-      <a-entity
-        id="reticle"
-        geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.075"
-        material="color: #22FF22; shader: flat;"
-        visible="false"
-        rotation="-90 0 0"
-      ></a-entity>
-
-      <a-entity
-        id="snowman"
-        gltf-model="#snowman-gltf"
-        scale="0.2 0.2 0.2"
-        visible="false"
-      ></a-entity>
-
-      <a-light type="ambient" intensity="0.5"></a-light>
-      <a-light type="directional" intensity="1.2" position="1 2 1"></a-light>
+      <a-entity id="reticle" 
+                geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.06" 
+                material="color: #FF0000; shader: flat" 
+                rotation="-90 0 0" 
+                ar-hit-test="target: #reticle">
+      </a-entity>
 
       <a-camera position="0 1.6 0"></a-camera>
+      
+      <a-light type="ambient" color="#BBB"></a-light>
+      <a-light directional position="-1 2 1"></a-light>
+
+      <a-box position="0 0.5 -2" color="#4CC3D9"></a-box>
     </a-scene>
+
+    <div id="overlay" style="position: fixed; top: 10px; left: 10px; color: white; pointer-events: none;">
+      Look at floor to find reticle, then tap.
+    </div>
   </body>
 </html>
