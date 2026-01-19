@@ -18,7 +18,6 @@
 
     <a-scene 
       webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
-      ar-hit-test="target: #reticle;"
       renderer="alpha: true; colorManagement: true;"
       vr-mode-ui="enabled: false"
       loading-screen="enabled: false"
@@ -47,29 +46,29 @@
           sceneEl.enterVR(true); 
         });
 
+        // ONLY add hit-test AFTER the session has successfully started
         sceneEl.addEventListener('enter-vr', () => {
           if (sceneEl.is('ar-mode')) {
             btn.style.display = 'none';
+            // Wait a tiny bit for the session to settle, then add hit-test
+            setTimeout(() => {
+              sceneEl.setAttribute('ar-hit-test', 'target: #reticle;');
+            }, 1000);
           }
         });
 
         sceneEl.addEventListener('ar-hit-test-select', () => {
           if (reticle.getAttribute('visible')) {
             const spawnPos = reticle.getAttribute('position');
-            
-            // Create the entity
             const newObj = document.createElement('a-entity');
             
-            // Try to use Snowman, otherwise use a Box
+            // Try model, but always include a fallback geometry
             newObj.setAttribute('gltf-model', '#snowman-model');
-            newObj.setAttribute('geometry', 'primitive: box; width: 0.2; height: 0.2; depth: 0.2');
+            newObj.setAttribute('geometry', 'primitive: sphere; radius: 0.1');
             newObj.setAttribute('material', 'color: white');
             
-            newObj.setAttribute('scale', '0.2 0.2 0.2');
             newObj.setAttribute('position', spawnPos);
-            
             sceneEl.appendChild(newObj);
-            console.log("Spawned at:", spawnPos);
           }
         });
       });
