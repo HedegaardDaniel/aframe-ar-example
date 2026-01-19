@@ -7,57 +7,31 @@
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 
     <script>
-      console.log("GitHub Pages commmit 12");
-      // Component to show AR support status
-      AFRAME.registerComponent('check-ar-support', {
-        init: function () {
-          const noArEl = document.querySelector('#no-ar');
-          if (navigator.xr && navigator.xr.isSessionSupported) {
-            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-              if (supported) noArEl.setAttribute('visible', 'false');
-            });
-          }
-        }
-      });
-
-      // Component to tap and place snowmen on detected planes
+      console.log("GitHub Pages commmit 13");
+      // Tap-to-place component
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
-          scene.addEventListener('click', async (evt) => {
-            const xrSession = scene.renderer.xr.getSession();
-            if (!xrSession) return;
 
-            const frame = evt.detail.frame;
-            const referenceSpace = evt.detail.referenceSpace;
-            if (!frame || !referenceSpace) return;
+          // Show a warning if AR not supported
+          const noArEl = document.querySelector('#no-ar');
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+              if (supported && noArEl) noArEl.setAttribute('visible', 'false');
+            });
+          }
 
-            // Get hit test results from the AR session
-            const hitTestResults = frame.getHitTestResults(evt.detail.hitTestSource);
-            if (!hitTestResults || hitTestResults.length === 0) return;
-
-            // Use the first hit
-            const hit = hitTestResults[0];
-            const pose = hit.getPose(referenceSpace);
-            if (!pose) return;
-
-            // Clone the snowman template
+          scene.addEventListener('click', () => {
             const template = document.querySelector('#snowman');
             if (!template) return;
 
+            // Place the snowman 1m in front of the camera
+            const camera = scene.camera.el.object3D;
+            const pos = camera.localToWorld(new THREE.Vector3(0, -0.5, -1));
+
             const clone = template.cloneNode(true);
             clone.setAttribute('visible', 'true');
-            clone.object3D.position.set(
-              pose.transform.position.x,
-              pose.transform.position.y,
-              pose.transform.position.z
-            );
-            clone.object3D.quaternion.set(
-              pose.transform.orientation.x,
-              pose.transform.orientation.y,
-              pose.transform.orientation.z,
-              pose.transform.orientation.w
-            );
+            clone.object3D.position.copy(pos);
 
             scene.appendChild(clone);
           });
@@ -66,38 +40,36 @@
     </script>
   </head>
 
-  <body style="margin:0; overflow:hidden;">
-    <a-scene
-      embedded
-      xr-mode-ui="enabled: true"
-      check-ar-support
-      tap-to-place
-      renderer="colorManagement: true; antialias: true"
-    >
-      <!-- Sky and lighting -->
-      <a-sky color="#ECECEC"></a-sky>
-      <a-light type="ambient" intensity="0.5"></a-light>
-      <a-light type="directional" intensity="1.5" position="1 2 1"></a-light>
-
-      <!-- Snowman template (hidden, cloned on tap) -->
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene embedded tap-to-place>
+      <!-- Snowman template (hidden until cloned) -->
       <a-entity
         id="snowman"
         gltf-model="assets/models/Snowman.gltf"
         scale="0.2 0.2 0.2"
-        shadow="cast: true; receive: true"
         visible="false"
-      ></a-entity>
+        shadow="cast: true; receive: true">
+      </a-entity>
 
-      <!-- AR not supported message -->
+      <!-- AR not supported warning -->
       <a-entity
         id="no-ar"
         visible="true"
         text="value: AR not supported on this device; color: red; width: 3"
-        position="0 1 -2"
-      ></a-entity>
+        position="0 1 -2">
+      </a-entity>
 
-      <!-- Camera -->
+      <!-- Camera and lighting -->
       <a-camera></a-camera>
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="directional" intensity="1" position="1 2 1"></a-light>
+
+      <!-- Sky background -->
+      <a-sky color="#ECECEC" hide-on-enter-ar></a-sky>
     </a-scene>
+
+    <script>
+      console.log("GitHub Pages commit 12 loaded");
+    </script>
   </body>
 </html>
