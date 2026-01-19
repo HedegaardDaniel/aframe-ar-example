@@ -4,31 +4,32 @@
     <meta charset="utf-8">
     <title>AR Snowmen • A-Frame</title>
     <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-    <script>
-      console.log("GitHub Pages commmit 8");
 
-      // tap-to-place component
+    <!-- A-Frame core -->
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <!-- AR.js for WebXR + camera fallback -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+    <script>
+      console.log("GitHub Pages commmit 9");
+
+      // Component to tap and place snowmen
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
           scene.addEventListener('click', () => {
+            const camera = scene.camera.el.object3D;
             const template = document.querySelector('#snowman');
             if (!template) return;
-            if (!template.getObject3D('mesh')) {
-              console.warn('Snowman not yet loaded!');
-              return;
-            }
-
-            // place 1m in front of camera
-            const cameraEl = scene.camera.el;
-            const cameraObj = cameraEl.object3D;
-            const pos = new THREE.Vector3(0, -0.5, -1);
-            cameraObj.localToWorld(pos);
 
             const clone = template.cloneNode(true);
             clone.setAttribute('visible', 'true');
+
+            // Place in front of camera
+            const pos = new THREE.Vector3(0, -0.5, -1);
+            camera.localToWorld(pos);
             clone.object3D.position.copy(pos);
+
             scene.appendChild(clone);
           });
         }
@@ -36,17 +37,18 @@
     </script>
   </head>
 
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded tap-to-place>
-      <!-- Camera -->
-      <a-camera position="0 1.6 0"></a-camera>
-
+  <body style="margin:0; overflow:hidden;">
+    <a-scene
+      embedded
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      tap-to-place
+    >
       <!-- Snowman template -->
       <a-entity
         id="snowman"
         gltf-model="assets/models/Snowman.gltf"
-        visible="false"
         scale="0.2 0.2 0.2"
+        visible="false"
         shadow="cast: true; receive: true">
       </a-entity>
 
@@ -54,11 +56,8 @@
       <a-light type="ambient" intensity="0.5"></a-light>
       <a-light type="directional" intensity="1" position="1 2 1"></a-light>
 
-      <!-- Ground -->
-      <a-plane rotation="-90 0 0" width="5" height="5" color="#7BC8A4" shadow></a-plane>
-
-      <!-- Sky -->
-      <a-sky color="#ECECEC"></a-sky>
+      <!-- Camera -->
+      <a-camera position="0 1.6 0"></a-camera>
     </a-scene>
   </body>
 </html>
