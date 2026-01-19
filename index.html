@@ -31,31 +31,30 @@
     </a-scene>
 
     <script>
-        console.log("GitHub Pages commit 39");
+        console.log("GitHub Pages commit 40");
       const world = document.querySelector('#world');
       const cam = document.querySelector('#myCam');
 
       const spawn = () => {
         console.log("Spawn triggered");
         
-        // 1. Get current Camera position and direction
         const position = cam.object3D.position;
         const direction = new THREE.Vector3(0, 0, -1);
         direction.applyQuaternion(cam.object3D.quaternion);
         
-        // 2. Calculate a spot 2 meters in front of the camera
         const spawnPos = new THREE.Vector3().copy(position).add(direction.multiplyScalar(2));
         
-        // 3. Create the snowman
         const el = document.createElement('a-entity');
         el.setAttribute('gltf-model', '#snowman-model');
         
-        // Use a box as a backup so we see SOMETHING even if model fails
-        el.setAttribute('geometry', 'primitive: box; width: 0.3; height: 0.3; depth: 0.3');
-        el.setAttribute('material', 'color: white; opacity: 0.8');
+        // 1. FIX POSITION: Lower them slightly so they appear on the 'floor'
+        el.setAttribute('position', `${spawnPos.x} ${spawnPos.y - 1} ${spawnPos.z}`);
+        
+        // 2. FIX ROTATION: If they are lying on their back, we rotate them 90 degrees.
+        // If they are still lying down after this, try '0 0 0' or '90 0 0'
+        el.setAttribute('rotation', '-90 0 0');
         
         el.setAttribute('scale', '0.5 0.5 0.5');
-        el.setAttribute('position', `${spawnPos.x} ${spawnPos.y} ${spawnPos.z}`);
         
         world.appendChild(el);
       };
