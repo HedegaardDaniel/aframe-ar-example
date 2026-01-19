@@ -2,60 +2,52 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR Test</title>
+    <title>AR Snowmen</title>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script>
       console.log("GitHub Pages commit 22");
-      AFRAME.registerComponent('tap-to-spawn', {
+      AFRAME.registerComponent('spawn-manager', {
         init: function () {
-          this.el.addEventListener('click', (evt) => {
-            // This works in both AR (via hit-test) and Desktop (via mouse)
-            if (this.el.is('ar-mode')) {
-               const reticle = document.querySelector('#reticle');
-               if (reticle.getAttribute('visible')) {
-                 this.spawn(reticle.getAttribute('position'));
-               }
-            } else {
-               // Desktop fallback: spawn at a random spot
-               this.spawn("-1 0.5 -3");
-            }
+          const scene = this.el;
+          const reticle = document.querySelector('#reticle');
+
+          // This event fires when you tap the screen while a hit-test surface is found
+          scene.addEventListener('ar-hit-test-select', (evt) => {
+            console.log("Surface tapped!");
+            
+            // Create the snowman/box
+            const newObj = document.createElement('a-entity');
+            
+            // For now, let's use a simple sphere so we know it's not a model loading issue
+            newObj.setAttribute('geometry', 'primitive: sphere; radius: 0.1');
+            newObj.setAttribute('material', 'color: white');
+            
+            // Position it where the reticle is
+            newObj.setAttribute('position', reticle.getAttribute('position'));
+            
+            scene.appendChild(newObj);
           });
-        },
-        spawn: function (pos) {
-          const newBox = document.createElement('a-box');
-          newBox.setAttribute('position', pos);
-          newBox.setAttribute('color', 'orange');
-          newBox.setAttribute('scale', '0.2 0.2 0.2');
-          this.el.appendChild(newBox);
         }
       });
     </script>
   </head>
-  <body>
+  <body style="margin: 0; overflow: hidden;">
     <a-scene 
-      webxr="requiredFeatures: hit-test, local-floor; optionalFeatures: dom-overlay; overlayElement: #overlay"
-      renderer="alpha: true; colorManagement: true;"
-      cursor="rayOrigin: mouse"
-      tap-to-spawn
-      background="color: #ECECEC">
-
-      <a-entity id="reticle" 
-                geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.06" 
-                material="color: #FF0000; shader: flat" 
-                rotation="-90 0 0" 
-                ar-hit-test="target: #reticle">
+      renderer="alpha: true;"
+      webxr="optionalFeatures: hit-test, local-floor;"
+      ar-hit-test="target: #reticle;"
+      spawn-manager
+    >
+      
+      <a-entity id="reticle" visible="false">
+        <a-ring color="green" radius-inner="0.05" radius-outer="0.08" rotation="-90 0 0"></a-ring>
       </a-entity>
 
+      <a-box position="0 0.5 -3" color="#4CC3D9"></a-box>
+
       <a-camera position="0 1.6 0"></a-camera>
-      
-      <a-light type="ambient" color="#BBB"></a-light>
-      <a-light directional position="-1 2 1"></a-light>
-
-      <a-box position="0 0.5 -2" color="#4CC3D9"></a-box>
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="directional" position="1 2 1"></a-light>
     </a-scene>
-
-    <div id="overlay" style="position: fixed; top: 10px; left: 10px; color: white; pointer-events: none;">
-      Look at floor to find reticle, then tap.
-    </div>
   </body>
 </html>
