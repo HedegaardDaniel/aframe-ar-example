@@ -3,30 +3,31 @@
   <head>
     <meta charset="utf-8">
     <title>AR Snowmen • A-Frame</title>
-    <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script>
-      console.log("GitHub Pages commit 20");
-
       AFRAME.registerComponent('spawn-on-select', {
         init: function () {
           const scene = this.el;
-          scene.addEventListener('ar-hit-test-select', (evt) => {
-            // The target reticle will have been positioned
-            const reticle = evt.detail.reticle;
-            if (!reticle) return;
+          const reticle = document.querySelector('#reticle');
+
+          scene.addEventListener('ar-hit-test-select', () => {
+            // Only spawn if the reticle is actually visible (found a surface)
+            if (!reticle || !reticle.getAttribute('visible')) return;
 
             const template = document.querySelector('#snowman');
-            if (!template) return;
+            const newSnowman = document.createElement('a-entity');
+            
+            // Set model and scale
+            newSnowman.setAttribute('gltf-model', template.getAttribute('gltf-model'));
+            newSnowman.setAttribute('scale', template.getAttribute('scale'));
+            newSnowman.setAttribute('visible', 'true');
 
-            const clone = template.cloneNode(true);
-            clone.setAttribute('visible', 'true');
+            // IMPORTANT: Copy position/rotation from the reticle's current world position
+            newSnowman.setAttribute('position', reticle.getAttribute('position'));
+            newSnowman.setAttribute('rotation', reticle.getAttribute('rotation'));
 
-            // Copy pose from reticle
-            clone.object3D.position.copy(reticle.object3D.position);
-            clone.object3D.quaternion.copy(reticle.object3D.quaternion);
-
-            scene.appendChild(clone);
+            scene.appendChild(newSnowman);
+            console.log("GitHub Pages commit 21");
           });
         }
       });
@@ -35,41 +36,34 @@
 
   <body style="margin:0; overflow:hidden;">
     <a-scene
-      embedded
-      style="width:100vw; height:100vh;"
+      renderer="alpha: true; antialias: true; colorManagement: true;"
       xr-mode-ui="enabled: true"
       webxr="optionalFeatures: hit-test"
       ar-hit-test="target: #reticle"
       spawn-on-select
     >
-      <!-- the reticle used for placement -->
+      <a-assets>
+        <a-asset-item id="snowman-gltf" src="assets/models/Snowman.gltf"></a-asset-item>
+      </a-assets>
+
       <a-entity
         id="reticle"
         geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.075"
-        material="color: green; shader: flat;"
+        material="color: #22FF22; shader: flat;"
         visible="false"
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- snowman template, hidden until clone -->
       <a-entity
         id="snowman"
-        gltf-model="assets/models/Snowman.gltf"
+        gltf-model="#snowman-gltf"
         scale="0.2 0.2 0.2"
         visible="false"
-        shadow="cast:true;receive:true"
       ></a-entity>
 
-      <!-- fallback objects so you see something if AR doesn’t start -->
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-      <a-sphere position="0 1.25 -4" radius="0.5" color="#EF2D5E"></a-sphere>
-      <a-cylinder position="1 0.75 -3.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
-
-      <!-- lighting -->
       <a-light type="ambient" intensity="0.5"></a-light>
       <a-light type="directional" intensity="1.2" position="1 2 1"></a-light>
 
-      <!-- camera -->
       <a-camera position="0 1.6 0"></a-camera>
     </a-scene>
   </body>
