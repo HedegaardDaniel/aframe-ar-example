@@ -46,38 +46,29 @@
   </head>
 
   <script>
-    console.log("GitHub Pages commit 6");
+    console.log("GitHub Pages commit 7");
   </script>
 
   <a-box position="0 0.5 -2" rotation="0 45 0" color="#4CC3D9"></a-box>
 
 
   <body style="margin: 0; overflow: hidden;">
-    <a-scene
-      vr-mode-ui="enabled: false"
-      renderer="colorManagement: true; antialias: true"
-      embedded
-      tap-to-place
-    >
-      <!-- Lighting -->
-      <a-light type="directional" intensity="1.5" position="1 2 1"></a-light>
-      <a-light type="ambient" intensity="0.5"></a-light>
+<a-scene embedded>
+  <a-sky color="#ECECEC"></a-sky>
 
-      <!-- Snowman template -->
-      <a-entity id="snowman" 
-                gltf-model="assets/models/Snowman.gltf" 
-                scale="0.2 0.2 0.2"
-                visible="false">
-      </a-entity>
+  <!-- Snowman directly visible -->
+  <a-entity
+    gltf-model="assets/models/Snowman.gltf"
+    position="0 0 -2"
+    scale="0.2 0.2 0.2"
+    shadow="cast: true; receive: true">
+  </a-entity>
 
-      <!-- AR not supported message -->
-      <a-entity id="no-ar" 
-                text="value: AR not supported on this device; color: red; width: 3" 
-                position="0 1 -2">
-      </a-entity>
+  <a-light type="ambient" intensity="0.5"></a-light>
+  <a-light type="directional" intensity="1" position="1 2 1"></a-light>
 
-      <!-- Sky (background) -->
-      <a-sky color="#ECECEC" hide-on-enter-ar></a-sky>
-    </a-scene>
+  <a-camera></a-camera>
+</a-scene>
+
   </body>
 </html>
