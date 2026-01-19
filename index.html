@@ -2,51 +2,44 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Winter AR Scene</title>
+    <title>AR Snowman Fix</title>
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script>
-      console.log("GitHub Pages commit 25");
+      console.log("GitHub Pages commit 26");
+      // 1. Component to spawn snowmen
       AFRAME.registerComponent('spawn-manager', {
         init: function () {
           const scene = this.el;
           const reticle = document.querySelector('#reticle');
 
-          // MOBILE AR SPAWN
-          scene.addEventListener('ar-hit-test-select', (evt) => {
-            const pos = reticle.getAttribute('position');
-            this.spawn(pos);
+          // Handle AR Tap
+          scene.addEventListener('ar-hit-test-select', () => {
+            if (reticle.getAttribute('visible')) {
+              this.spawn(reticle.getAttribute('position'));
+            }
           });
 
-          // DESKTOP FALLBACK SPAWN
+          // Handle Desktop/Fallback Tap
           window.addEventListener('click', () => {
             if (!scene.is('ar-mode')) {
-              // Spawns in a random arc in front of the camera
-              const x = (Math.random() - 0.5) * 2;
-              const z = -2 - Math.random() * 2;
-              this.spawn(`${x} 0 ${z}`);
+              this.spawn("0 0 -3");
             }
           });
         },
-        spawn: function (posStr) {
-          const newSnowman = document.createElement('a-entity');
-          
-          // Use the GLTF model from your folder
-          newSnowman.setAttribute('gltf-model', '#snowman-model');
-          newSnowman.setAttribute('scale', '0.2 0.2 0.2');
-          newSnowman.setAttribute('position', posStr);
-          
-          // Add a simple animation so we know it's a new one
-          newSnowman.setAttribute('animation', 'property: scale; from: 0 0 0; to: 0.2 0.2 0.2; dur: 500');
-          
-          this.el.appendChild(newSnowman);
-          console.log("Snowman spawned at: " + posStr);
+        spawn: function (pos) {
+          const entity = document.createElement('a-entity');
+          entity.setAttribute('gltf-model', '#snowman-model');
+          entity.setAttribute('scale', '0.2 0.2 0.2');
+          entity.setAttribute('position', pos);
+          this.el.appendChild(entity);
         }
       });
     </script>
   </head>
   <body style="margin: 0; overflow: hidden;">
+    
     <a-scene 
-      webxr="requiredFeatures: hit-test, local-floor;"
+      webxr="requiredFeatures: hit-test, local-floor; referenceSpaceType: local; modes: ar"
       renderer="alpha: true; colorManagement: true;"
       spawn-manager
     >
@@ -55,14 +48,16 @@
         <a-asset-item id="snowman-model" src="assets/models/Snowman.gltf"></a-asset-item>
       </a-assets>
 
-      <a-entity id="reticle" visible="false">
-        <a-ring color="#22FF22" radius-inner="0.05" radius-outer="0.07" rotation="-90 0 0"></a-ring>
+      <a-entity id="reticle" 
+                ar-hit-test="target: #reticle"
+                geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.08" 
+                material="color: #00FF00; shader: flat" 
+                rotation="-90 0 0"
+                visible="false">
       </a-entity>
 
-      <a-grid static-body material="opacity: 0.2; transparent: true" visible="true"></a-grid>
-
-      <a-light type="ambient" intensity="0.6"></a-light>
-      <a-light type="directional" position="1 4 3" intensity="0.8"></a-light>
+      <a-light type="ambient" intensity="0.8"></a-light>
+      <a-light type="directional" position="1 2 1" intensity="0.5"></a-light>
 
       <a-camera position="0 1.6 0"></a-camera>
 
