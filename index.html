@@ -1,55 +1,81 @@
-<a-scene 
-  webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
-  renderer="alpha: true; colorManagement: true;"
-  vr-mode-ui="enabled: false"
-  loading-screen="enabled: false" 
->
-  <a-assets>
-    <a-asset-item id="snowman-model" src="assets/models/Snowman.gltf"></a-asset-item>
-  </a-assets>
-
-  <a-entity id="reticle" 
-            ar-hit-test="target: #reticle"
-            geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.08" 
-            material="color: #00FF00; shader: flat" 
-            rotation="-90 0 0"
-            visible="false">
-  </a-entity>
-
-  <a-light type="ambient" intensity="1"></a-light>
-  <a-camera position="0 1.6 0"></a-camera>
-
-  <script>
-    console.log("GitHub Pages commit 30");
-    const sceneEl = document.querySelector('a-scene');
-    const btn = document.querySelector('#ar-button');
-
-    btn.addEventListener('click', () => {
-      sceneEl.enterVR(true); 
-    });
-
-    sceneEl.addEventListener('enter-vr', () => {
-      btn.style.display = 'none';
-    });
-
-    // SPAWN LOGIC: 
-    // We listen for the 'select' event on the session 
-    // which A-Frame maps to a click/tap on the screen
-    sceneEl.addEventListener('ar-hit-test-select', () => {
-      const reticle = document.querySelector('#reticle');
-      
-      // Only spawn if the reticle has found a floor (is visible)
-      if (reticle.getAttribute('visible')) {
-        const snowman = document.createElement('a-entity');
-        snowman.setAttribute('gltf-model', '#snowman-model');
-        snowman.setAttribute('scale', '0.2 0.2 0.2');
-        
-        // Match position and rotation of the reticle
-        snowman.setAttribute('position', reticle.getAttribute('position'));
-        snowman.setAttribute('rotation', reticle.getAttribute('rotation'));
-        
-        sceneEl.appendChild(snowman);
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AR Snowman Fix</title>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <style>
+      #ar-button {
+        position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+        z-index: 9999; padding: 20px 40px; background: #000; color: #fff;
+        border: 2px solid #fff; border-radius: 50px; font-size: 18px; cursor: pointer;
       }
-    });
-  </script>
-</a-scene>
+    </style>
+  </head>
+  <body style="margin: 0; overflow: hidden; background-color: #000;">
+    
+    <button id="ar-button">ACTIVATE AR</button>
+
+    <a-scene 
+      webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
+      renderer="alpha: true; colorManagement: true;"
+      vr-mode-ui="enabled: false"
+      loading-screen="enabled: false"
+    >
+      
+      <a-assets>
+        <a-asset-item id="snowman-model" src="assets/models/Snowman.gltf"></a-asset-item>
+      </a-assets>
+
+      <a-entity id="reticle" 
+                ar-hit-test="target: #reticle"
+                geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.07" 
+                material="color: #00FF00; shader: flat" 
+                rotation="-90 0 0"
+                visible="false">
+      </a-entity>
+
+      <a-light type="ambient" intensity="1"></a-light>
+      <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
+
+    <script>
+      console.log("GitHub Pages commit 31");
+      // We wait for the window to load so 'ar-button' is not null
+      window.addEventListener('load', () => {
+        const sceneEl = document.querySelector('a-scene');
+        const btn = document.querySelector('#ar-button');
+        const reticle = document.querySelector('#reticle');
+
+        btn.addEventListener('click', () => {
+          // Force AR mode
+          sceneEl.enterVR(true); 
+        });
+
+        sceneEl.addEventListener('enter-vr', () => {
+          if (sceneEl.is('ar-mode')) {
+            btn.style.display = 'none';
+          }
+        });
+
+        // This event is the "Bonus Task" - spawning on touch
+        sceneEl.addEventListener('ar-hit-test-select', () => {
+          if (reticle.getAttribute('visible')) {
+            const snowman = document.createElement('a-entity');
+            
+            // Set attributes
+            snowman.setAttribute('gltf-model', '#snowman-model');
+            snowman.setAttribute('scale', '0.2 0.2 0.2');
+            
+            // Get position from reticle
+            const pos = reticle.getAttribute('position');
+            snowman.setAttribute('position', pos);
+            
+            sceneEl.appendChild(snowman);
+            console.log("Snowman spawned at:", pos);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
