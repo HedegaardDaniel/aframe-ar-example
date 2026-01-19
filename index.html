@@ -3,34 +3,23 @@
   <head>
     <meta charset="utf-8">
     <title>AR Snowman Fix</title>
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js">
-            console.log("GitHub Pages commit 27");
-    </script>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <style>
       #ar-button {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        padding: 15px 30px;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 18px;
-        font-weight: bold;
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        z-index: 9999; padding: 15px 30px; background: #222; color: white;
+        border: 2px solid white; border-radius: 30px; font-size: 16px;
       }
     </style>
   </head>
   <body style="margin: 0; overflow: hidden;">
     
-    <button id="ar-button">ENTER AR MODE</button>
+    <button id="ar-button">ACTIVATE AR CAMERA</button>
 
     <a-scene 
-      webxr="optionalFeatures: hit-test, local-floor; referenceSpaceType: local;"
-      renderer="alpha: true; colorManagement: true;"
-      embedded
+      webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
+      renderer="alpha: true; colorManagement: true; antialias: true;"
+      vr-mode-ui="enabled: false"
     >
       
       <a-assets>
@@ -39,32 +28,35 @@
 
       <a-entity id="reticle" 
                 ar-hit-test="target: #reticle"
-                geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.08" 
+                geometry="primitive: ring; radiusInner: 0.04; radiusOuter: 0.07" 
                 material="color: #00FF00; shader: flat" 
                 rotation="-90 0 0"
                 visible="false">
       </a-entity>
 
-      <a-light type="ambient" intensity="0.8"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
       <a-camera position="0 1.6 0"></a-camera>
 
       <script>
+        console.log("GitHub Pages commit 28");
         const sceneEl = document.querySelector('a-scene');
         const btn = document.querySelector('#ar-button');
 
-        // Force Enter AR on button click
         btn.addEventListener('click', () => {
-          sceneEl.enterVR(); // In A-Frame, enterVR() handles both VR and AR
+          // Force A-Frame to attempt AR mode specifically
+          sceneEl.enterVR(true); 
         });
 
-        // Hide button when in AR
         sceneEl.addEventListener('enter-vr', () => {
           if (sceneEl.is('ar-mode')) {
             btn.style.display = 'none';
+            console.log("AR Mode Active!");
+          } else {
+            console.log("Entered VR instead of AR. Check Chrome Flags.");
           }
         });
 
-        // Spawn logic
+        // Spawning logic
         sceneEl.addEventListener('ar-hit-test-select', () => {
           const reticle = document.querySelector('#reticle');
           if (reticle.getAttribute('visible')) {
