@@ -1,72 +1,76 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>AR Snowmen • A‑Frame</title>
-  <meta name="description" content="Place snowmen in AR using A‑Frame WebXR">
-  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <title>AR Snowmen • A-Frame</title>
+    <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script>
+      console.log("GitHub Pages commit 20");
 
-  <script>
-    console.log("GitHub Pages commit 19");
+      AFRAME.registerComponent('spawn-on-select', {
+        init: function () {
+          const scene = this.el;
+          scene.addEventListener('ar-hit-test-select', (evt) => {
+            // The target reticle will have been positioned
+            const reticle = evt.detail.reticle;
+            if (!reticle) return;
 
-    AFRAME.registerComponent('place-on-select', {
-      init: function () {
-        const scene = this.el;
-        scene.addEventListener('select', (evt) => {
-          const reticle = scene.querySelector('#reticle');
-          if (!reticle || !reticle.object3D.visible) return;
+            const template = document.querySelector('#snowman');
+            if (!template) return;
 
-          // Clone and place snowman at reticle
-          const template = document.querySelector('#snowman');
-          if (!template) return;
-          const clone = template.cloneNode(true);
-          clone.setAttribute('visible', 'true');
-          clone.object3D.position.copy(reticle.object3D.position);
-          scene.appendChild(clone);
-        });
-      }
-    });
-  </script>
-</head>
+            const clone = template.cloneNode(true);
+            clone.setAttribute('visible', 'true');
 
-<body style="margin:0; overflow:hidden;">
-  <a-scene
-    webxr="optionalFeatures: hit-test;"
-    ar-hit-test="target:#reticle;"
-    place-on-select
-    embedded
-    renderer="colorManagement:true; antialias:true"
-    style="width:100vw; height:100vh;"
-  >
-    <!-- Reticle that shows where hit-test detects a surface -->
-    <a-entity
-      id="reticle"
-      geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.075"
-      material="color: limegreen; shader: flat"
-      visible="false"
-      rotation="-90 0 0"
-    ></a-entity>
+            // Copy pose from reticle
+            clone.object3D.position.copy(reticle.object3D.position);
+            clone.object3D.quaternion.copy(reticle.object3D.quaternion);
 
-    <!-- Snowman template hidden until placed -->
-    <a-entity
-      id="snowman"
-      gltf-model="assets/models/Snowman.gltf"
-      scale="0.2 0.2 0.2"
-      visible="false"
-      shadow="cast:true;receive:true"
-    ></a-entity>
+            scene.appendChild(clone);
+          });
+        }
+      });
+    </script>
+  </head>
 
-    <!-- Fallback for desktop: show primitives -->
-    <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-    <a-sphere position="0 1.25 -4" radius="0.5" color="#EF2D5E"></a-sphere>
-    <a-cylinder position="1 0.75 -3.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
+  <body style="margin:0; overflow:hidden;">
+    <a-scene
+      embedded
+      style="width:100vw; height:100vh;"
+      xr-mode-ui="enabled: true"
+      webxr="optionalFeatures: hit-test"
+      ar-hit-test="target: #reticle"
+      spawn-on-select
+    >
+      <!-- the reticle used for placement -->
+      <a-entity
+        id="reticle"
+        geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.075"
+        material="color: green; shader: flat;"
+        visible="false"
+        rotation="-90 0 0"
+      ></a-entity>
 
-    <!-- Lights -->
-    <a-light type="ambient" intensity="0.5"></a-light>
-    <a-light type="directional" intensity="1.2" position="1 2 1"></a-light>
+      <!-- snowman template, hidden until clone -->
+      <a-entity
+        id="snowman"
+        gltf-model="assets/models/Snowman.gltf"
+        scale="0.2 0.2 0.2"
+        visible="false"
+        shadow="cast:true;receive:true"
+      ></a-entity>
 
-    <!-- Camera -->
-    <a-camera position="0 1.6 0"></a-camera>
-  </a-scene>
-</body>
+      <!-- fallback objects so you see something if AR doesn’t start -->
+      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
+      <a-sphere position="0 1.25 -4" radius="0.5" color="#EF2D5E"></a-sphere>
+      <a-cylinder position="1 0.75 -3.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
+
+      <!-- lighting -->
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="directional" intensity="1.2" position="1 2 1"></a-light>
+
+      <!-- camera -->
+      <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
+  </body>
 </html>
