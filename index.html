@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <title>AR Snowmen • A-Frame</title>
     <meta name="description" content="Place snowmen in AR using A-Frame">
+    <!-- A-Frame core -->
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <!-- AR hit-test component -->
+    <script type="module" src="https://cdn.jsdelivr.net/gh/aframevr/aframe@master/examples/ar-hit-test/ar-hit-test.js"></script>
+
     <script>
       // Keep the follow-shadow component from the original
       AFRAME.registerComponent('follow-shadow', {
@@ -24,18 +28,18 @@
           const sceneEl = this.el;
 
           sceneEl.addEventListener('click', function () {
-            const hitTestResults = sceneEl.components['ar-hit-test'].hitTestResults;
-            if (!hitTestResults || hitTestResults.length === 0) return;
+            const hitTest = sceneEl.components['ar-hit-test'];
+            if (!hitTest || !hitTest.hitTestResults || hitTest.hitTestResults.length === 0) return;
 
             // Take the first hit on a horizontal plane
-            const hit = hitTestResults.find(h => h.type === 'plane') || hitTestResults[0];
+            const hit = hitTest.hitTestResults.find(h => h.type === 'plane') || hitTest.hitTestResults[0];
 
             const position = hit.position;
             const rotation = hit.rotation || { x: 0, y: 0, z: 0 };
 
-            // Clone the snowman entity
-            const original = document.querySelector('#snowman');
-            const clone = original.cloneNode(true);
+            // Clone the snowman entity template
+            const template = document.querySelector('#snowman');
+            const clone = template.cloneNode(true);
 
             clone.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
             clone.setAttribute('rotation', `${rotation.x} ${rotation.y} ${rotation.z}`);
@@ -50,12 +54,12 @@
 
   <body>
     <a-scene
-      reflection="directionalLight: a-light[type=directional]"
       ar-hit-test="target: #objects;"
+      tap-to-place
+      reflection="directionalLight: a-light[type=directional]"
       renderer="colorManagement: true; exposure: 1; toneMapping: ACESFilmic"
       shadow="type: pcfsoft"
       xr-mode-ui="XRMode: xr"
-      tap-to-place
     >
       <!-- Lighting -->
       <a-light type="directional" light="castShadow:true;" position="1 1 1" intensity="1.57" shadow-camera-automatic="#objects"></a-light>
@@ -63,7 +67,7 @@
       <!-- Camera -->
       <a-camera position="0 0.4 0" wasd-controls="acceleration:10;"></a-camera>
 
-      <!-- Placeholder entity that holds models -->
+      <!-- Container for models -->
       <a-entity id="objects" scale="0.2 0.2 0.2" position="0 0 -1" shadow>
         <!-- Snowman template (hidden, cloned on tap) -->
         <a-entity
