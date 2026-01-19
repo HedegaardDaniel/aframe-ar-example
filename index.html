@@ -11,24 +11,28 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
     <script>
-      console.log("GitHub Pages commmit 9");
+      console.log("GitHub Pages commmit 10");
 
       // Component to tap and place snowmen
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
-          scene.addEventListener('click', () => {
-            const camera = scene.camera.el.object3D;
-            const template = document.querySelector('#snowman');
-            if (!template) return;
+          scene.addEventListener('click', (evt) => {
+            const xrSession = scene.renderer.xr.getSession();
+            if (!xrSession) return;
 
+            // Get hit-test results from the AR session
+            const viewerSpace = scene.renderer.xr.getReferenceSpace();
+            const hitTestResults = evt.detail.frame.getHitTestResults(evt.detail.hitTestSource);
+            if (!hitTestResults.length) return;
+
+            const hit = hitTestResults[0]; // first detected horizontal surface
+            const position = hit.getPose(viewerSpace).transform.position;
+
+            const template = document.querySelector('#snowman');
             const clone = template.cloneNode(true);
             clone.setAttribute('visible', 'true');
-
-            // Place in front of camera
-            const pos = new THREE.Vector3(0, -0.5, -1);
-            camera.localToWorld(pos);
-            clone.object3D.position.copy(pos);
+            clone.object3D.position.set(position.x, position.y, position.z);
 
             scene.appendChild(clone);
           });
