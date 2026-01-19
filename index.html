@@ -2,28 +2,27 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>AR Snowman - Recovery Build</title>
+    <title>AR Snowman - Auto Build</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <style>
-      #debug-log {
-        position: fixed; top: 10px; left: 10px; padding: 10px;
-        background: rgba(0,0,0,0.7); color: white; font-family: monospace;
-        pointer-events: none; z-index: 1000; font-size: 12px;
-      }
-      #ar-btn {
-        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        padding: 15px 30px; background: #007bff; color: white; border: none;
-        border-radius: 50px; z-index: 1001;
+      #overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.8); color: white; z-index: 999;
+        font-family: sans-serif; text-align: center; padding: 20px;
       }
     </style>
   </head>
   <body style="margin: 0; overflow: hidden;">
 
-    <div id="debug-log">Status: Waiting for interaction...</div>
-    <button id="ar-btn">START AR</button>
+    <div id="overlay">
+      <h1>Winter AR</h1>
+      <p>Tap anywhere on this black screen <br> to activate your camera.</p>
+    </div>
 
     <a-scene 
-      webxr="optionalFeatures: hit-test, local-floor;"
+      webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
+      ar-hit-test="target: #reticle;"
       renderer="alpha: true; colorManagement: true;"
       vr-mode-ui="enabled: false">
       
@@ -36,55 +35,43 @@
       </a-entity>
 
       <a-camera position="0 1.6 0"></a-camera>
-      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
     </a-scene>
 
     <script>
-      console.log("GitHub Pages commit 34");
-      const log = (msg) => { document.getElementById('debug-log').innerText = "Status: " + msg; };
+      console.log("GitHub Pages commit 35");
       const sceneEl = document.querySelector('a-scene');
-      const btn = document.getElementById('ar-btn');
+      const overlay = document.getElementById('overlay');
 
-      btn.addEventListener('click', () => {
-        sceneEl.enterVR(); // Request AR session
+      // 1. Force AR on first tap
+      window.addEventListener('click', () => {
+        if (!sceneEl.is('ar-mode')) {
+          sceneEl.enterVR();
+        }
       });
 
+      // 2. Clear overlay when AR starts
       sceneEl.addEventListener('enter-vr', () => {
         if (sceneEl.is('ar-mode')) {
-          log("AR Started. Scan floor...");
-          btn.style.display = 'none';
-          
-          // Manually inject hit-test after session is live
-          sceneEl.setAttribute('ar-hit-test', 'target: #reticle;');
-        } else {
-          log("Failed to start AR mode.");
+          overlay.style.display = 'none';
         }
       });
 
-      // Monitor the reticle
-      setInterval(() => {
-        const reticle = document.getElementById('reticle');
-        if (reticle && reticle.getAttribute('visible')) {
-          log("Floor FOUND! Tap to place.");
-        }
-      }, 500);
-
-      // Spawning
-      sceneEl.addEventListener('ar-hit-test-select', (evt) => {
+      // 3. Spawning Logic
+      sceneEl.addEventListener('ar-hit-test-select', () => {
         const reticle = document.getElementById('reticle');
         if (reticle.getAttribute('visible')) {
           const spawnPos = reticle.getAttribute('position');
           const snowman = document.createElement('a-entity');
           
+          // Use model with box fallback
           snowman.setAttribute('gltf-model', '#snowman-model');
-          // Fallback box in case model path is broken
           snowman.setAttribute('geometry', 'primitive: box; width: 0.1; height: 0.1; depth: 0.1');
           snowman.setAttribute('material', 'color: white');
           
           snowman.setAttribute('position', spawnPos);
           snowman.setAttribute('scale', '0.2 0.2 0.2');
           sceneEl.appendChild(snowman);
-          log("Snowman placed!");
         }
       });
     </script>
