@@ -5,27 +5,18 @@
     <title>AR Snowmen • A-Frame</title>
     <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-
     <script>
-      console.log("GitHub Pages commmit 15");
-      // Tap-to-place component
+      console.log("GitHub Pages commit 16");
+
+      // Simple tap-to-place for the snowman 1m in front of camera
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
-
-          // Show a warning if AR not supported
-          const noArEl = document.querySelector('#no-ar');
-          if (navigator.xr && navigator.xr.isSessionSupported) {
-            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-              if (supported && noArEl) noArEl.setAttribute('visible', 'false');
-            });
-          }
 
           scene.addEventListener('click', () => {
             const template = document.querySelector('#snowman');
             if (!template) return;
 
-            // Place the snowman 1m in front of the camera
             const camera = scene.camera.el.object3D;
             const pos = camera.localToWorld(new THREE.Vector3(0, -0.5, -1));
 
@@ -41,24 +32,21 @@
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded>
-      <a-sky color="#ECECEC"></a-sky>
+    <a-scene tap-to-place style="width: 100vw; height: 100vh;">
+      <!-- Camera -->
+      <a-camera position="0 1.6 0"></a-camera>
 
+      <!-- Lights -->
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="directional" intensity="1" position="1 2 1"></a-light>
+
+      <!-- Primitive objects for testing -->
       <a-box position="0 0.5 -2" rotation="0 45 0" color="#4CC3D9"></a-box>
       <a-sphere position="1 1 -3" radius="0.5" color="#EF2D5E"></a-sphere>
       <a-cylinder position="-1 0.75 -2.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
 
-      <!-- Snowman visible by default -->
-      <a-entity
-        gltf-model="assets/models/Snowman.gltf"
-        position="0 0 -2"
-        scale="0.2 0.2 0.2"
-        shadow="cast: true; receive: true"
-      ></a-entity>
-
-      <a-light type="ambient" intensity="0.5"></a-light>
-      <a-light type="directional" intensity="1" position="1 2 1"></a-light>
-      <a-camera position="0 1.6 0"></a-camera>
+      <!-- Snowman template -->
+      <a-entity id="snowman" gltf-model="assets/models/Snowman.gltf" scale="0.2 0.2 0.2" visible="false"></a-entity>
     </a-scene>
   </body>
 </html>
