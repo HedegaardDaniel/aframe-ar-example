@@ -1,25 +1,77 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Simple AR - A Web based AR for A-Frame</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <meta charset="utf-8">
+    <title>AR Snowman Final</title>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <style>
+      #ar-button {
+        position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+        z-index: 9999; padding: 20px 40px; background: #000; color: #fff;
+        border: 2px solid #fff; border-radius: 50px; font-size: 18px;
+      }
+    </style>
   </head>
-  <body>
-    <script
-      src="https://cdn.jsdelivr.net/gh/akbartus/Simple-AR/dist/0.1.2/simple-ar.min.js"
-      onload="onWasmLoaded();"
-    ></script>
-    <a-scene>
-      <a-entity simple-ar="src: img/target.jpg; minCutOffValue: 1; betaValue:0.1;">
-        <a-plane
-          position="0 0 0"
-          rotation="0 0 0"
-          width="1"
-          height="1"
-          material="src: https://upload.wikimedia.org/wikipedia/en/a/a9/Example.jpg"
-        ></a-plane>
+  <body style="margin: 0; overflow: hidden; background-color: #000;">
+    
+    <button id="ar-button">ACTIVATE AR</button>
+
+    <a-scene 
+      webxr="optionalFeatures: hit-test, local-floor; modes: ar;"
+      renderer="alpha: true; colorManagement: true;"
+      vr-mode-ui="enabled: false"
+      loading-screen="enabled: false"
+    >
+      
+      <a-assets>
+        <a-asset-item id="snowman-model" src="assets/models/Snowman.gltf"></a-asset-item>
+      </a-assets>
+
+      <a-entity id="reticle" visible="false">
+        <a-ring color="#00FF00" radius-inner="0.04" radius-outer="0.07" rotation="-90 0 0"></a-ring>
       </a-entity>
-      <a-camera position="0 0 0"></a-camera>
+
+      <a-light type="ambient" intensity="1"></a-light>
+      <a-camera position="0 1.6 0"></a-camera>
     </a-scene>
+
+    <script>
+      console.log("GitHub Pages commit 33");
+      window.addEventListener('load', () => {
+        const sceneEl = document.querySelector('a-scene');
+        const btn = document.querySelector('#ar-button');
+        const reticle = document.querySelector('#reticle');
+
+        btn.addEventListener('click', () => {
+          sceneEl.enterVR(true); 
+        });
+
+        // ONLY add hit-test AFTER the session has successfully started
+        sceneEl.addEventListener('enter-vr', () => {
+          if (sceneEl.is('ar-mode')) {
+            btn.style.display = 'none';
+            // Wait a tiny bit for the session to settle, then add hit-test
+            setTimeout(() => {
+              sceneEl.setAttribute('ar-hit-test', 'target: #reticle;');
+            }, 1000);
+          }
+        });
+
+        sceneEl.addEventListener('ar-hit-test-select', () => {
+          if (reticle.getAttribute('visible')) {
+            const spawnPos = reticle.getAttribute('position');
+            const newObj = document.createElement('a-entity');
+            
+            // Try model, but always include a fallback geometry
+            newObj.setAttribute('gltf-model', '#snowman-model');
+            newObj.setAttribute('geometry', 'primitive: sphere; radius: 0.1');
+            newObj.setAttribute('material', 'color: white');
+            
+            newObj.setAttribute('position', spawnPos);
+            sceneEl.appendChild(newObj);
+          }
+        });
+      });
+    </script>
   </body>
 </html>
