@@ -1,90 +1,72 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>AR Snowmen • A-Frame</title>
-    <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/aframe-ar-hit-test@1.0.0/ar-hit-test.min.js"></script>
+<head>
+  <meta charset="utf-8">
+  <title>AR Snowmen • A‑Frame</title>
+  <meta name="description" content="Place snowmen in AR using A‑Frame WebXR">
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 
-    <script>
-      console.log("GitHub Pages commit 18");
+  <script>
+    console.log("GitHub Pages commit 19");
 
-      // Component to tap and place snowmen
-      AFRAME.registerComponent('tap-to-place', {
-        init: function () {
-          const scene = this.el;
+    AFRAME.registerComponent('place-on-select', {
+      init: function () {
+        const scene = this.el;
+        scene.addEventListener('select', (evt) => {
+          const reticle = scene.querySelector('#reticle');
+          if (!reticle || !reticle.object3D.visible) return;
 
-          // Show warning if AR not supported
-          const noArEl = document.querySelector('#no-ar');
-          if (navigator.xr && navigator.xr.isSessionSupported) {
-            navigator.xr.isSessionSupported('immersive-ar').then(supported => {
-              if (supported && noArEl) noArEl.setAttribute('visible', 'false');
-            });
-          }
+          // Clone and place snowman at reticle
+          const template = document.querySelector('#snowman');
+          if (!template) return;
+          const clone = template.cloneNode(true);
+          clone.setAttribute('visible', 'true');
+          clone.object3D.position.copy(reticle.object3D.position);
+          scene.appendChild(clone);
+        });
+      }
+    });
+  </script>
+</head>
 
-          // Listen for hit test placement events
-          scene.addEventListener('hit-test-select', evt => {
-            const template = document.querySelector('#snowman');
-            if (!template) return;
+<body style="margin:0; overflow:hidden;">
+  <a-scene
+    webxr="optionalFeatures: hit-test;"
+    ar-hit-test="target:#reticle;"
+    place-on-select
+    embedded
+    renderer="colorManagement:true; antialias:true"
+    style="width:100vw; height:100vh;"
+  >
+    <!-- Reticle that shows where hit-test detects a surface -->
+    <a-entity
+      id="reticle"
+      geometry="primitive: ring; radiusInner: 0.05; radiusOuter: 0.075"
+      material="color: limegreen; shader: flat"
+      visible="false"
+      rotation="-90 0 0"
+    ></a-entity>
 
-            const hit = evt.detail.hit; // the hit test result
-            const pos = hit.position;
-            const rot = hit.rotation || { x:0, y:0, z:0 };
+    <!-- Snowman template hidden until placed -->
+    <a-entity
+      id="snowman"
+      gltf-model="assets/models/Snowman.gltf"
+      scale="0.2 0.2 0.2"
+      visible="false"
+      shadow="cast:true;receive:true"
+    ></a-entity>
 
-            const clone = template.cloneNode(true);
-            clone.setAttribute('visible', 'true');
-            clone.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
-            clone.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
-            clone.setAttribute('scale', '0.2 0.2 0.2');
+    <!-- Fallback for desktop: show primitives -->
+    <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
+    <a-sphere position="0 1.25 -4" radius="0.5" color="#EF2D5E"></a-sphere>
+    <a-cylinder position="1 0.75 -3.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
 
-            scene.appendChild(clone);
-          });
-        }
-      });
-    </script>
-  </head>
+    <!-- Lights -->
+    <a-light type="ambient" intensity="0.5"></a-light>
+    <a-light type="directional" intensity="1.2" position="1 2 1"></a-light>
 
-  <body style="margin:0; overflow:hidden;">
-    <a-scene
-      embedded
-      xr-mode-ui="enabled:true"
-      tap-to-place
-      ar-hit-test="target:#objects;"
-      renderer="colorManagement:true; antialias:true"
-    >
-      <!-- AR not supported message -->
-      <a-entity
-        id="no-ar"
-        position="0 1 -2"
-        text="value: AR not supported on this device; color: red; width: 3"
-      ></a-entity>
-
-      <!-- Snowman template (hidden) -->
-      <a-entity
-        id="snowman"
-        gltf-model="assets/models/Snowman.gltf"
-        shadow="cast: true; receive: true"
-        visible="false"
-      ></a-entity>
-
-      <!-- Desktop fallback objects -->
-      <a-box position="-1 0.5 -2" rotation="0 45 0" color="#4CC3D9"></a-box>
-      <a-sphere position="0 1.25 -3" radius="0.5" color="#EF2D5E"></a-sphere>
-      <a-cylinder position="1 0.75 -2.5" radius="0.3" height="1" color="#FFC65D"></a-cylinder>
-
-      <!-- Lighting -->
-      <a-light type="ambient" intensity="0.5"></a-light>
-      <a-light type="directional" intensity="1" position="1 2 1"></a-light>
-
-      <!-- Camera -->
-      <a-camera position="0 1.6 0"></a-camera>
-
-      <!-- Container for cloned objects -->
-      <a-entity id="objects"></a-entity>
-
-      <!-- Background -->
-      <a-sky color="#ECECEC"></a-sky>
-    </a-scene>
-  </body>
+    <!-- Camera -->
+    <a-camera position="0 1.6 0"></a-camera>
+  </a-scene>
+</body>
 </html>
