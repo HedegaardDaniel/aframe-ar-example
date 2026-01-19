@@ -6,26 +6,37 @@
     <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script>
-      console.log("GitHub Pages commit 16");
+      console.log("GitHub Pages commit 17");
 
       // Simple tap-to-place for the snowman 1m in front of camera
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
+            scene.addEventListener('click', async (evt) => {
+              const xrSession = scene.renderer.xr.getSession();
+              if (!xrSession) return;
 
-          scene.addEventListener('click', () => {
-            const template = document.querySelector('#snowman');
-            if (!template) return;
+              // Request hit test source (for horizontal surfaces)
+              const viewerSpace = await xrSession.requestReferenceSpace('viewer');
+              const hitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
 
-            const camera = scene.camera.el.object3D;
-            const pos = camera.localToWorld(new THREE.Vector3(0, -0.5, -1));
+              const frame = evt.detail.frame;
+              const referenceSpace = scene.renderer.xr.getReferenceSpace();
+              const hitTestResults = frame.getHitTestResults(hitTestSource);
 
-            const clone = template.cloneNode(true);
-            clone.setAttribute('visible', 'true');
-            clone.object3D.position.copy(pos);
+              if (hitTestResults.length > 0) {
+                const hit = hitTestResults[0];
+                const pose = hit.getPose(referenceSpace);
 
-            scene.appendChild(clone);
-          });
+                const clone = document.querySelector('#snowman').cloneNode(true);
+                clone.setAttribute('visible', 'true');
+                clone.object3D.position.set(pose.transform.position.x,
+                                            pose.transform.position.y,
+                                            pose.transform.position.z);
+                scene.appendChild(clone);
+              }
+            });
+
         }
       });
     </script>
