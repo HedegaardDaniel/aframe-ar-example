@@ -5,39 +5,30 @@
     <title>AR Snowmen • A-Frame</title>
     <meta name="description" content="Place snowmen in AR using A-Frame WebXR">
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-
     <script>
-      // Component to tap and place snowmen
+      console.log("GitHub Pages commmit 8");
+
+      // tap-to-place component
       AFRAME.registerComponent('tap-to-place', {
         init: function () {
           const scene = this.el;
-
-          // Only show AR-supported warning if WebXR not available
-          const noArEl = document.querySelector('#no-ar');
-          if (navigator.xr && navigator.xr.isSessionSupported) {
-            navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-              if (supported) noArEl.setAttribute('visible', 'false');
-            });
-          }
-
-          scene.addEventListener('click', (evt) => {
-            if (!scene.renderer.xr || !scene.renderer.xr.getSession()) return;
-
-            // Get hit test results from A-Frame (via ar-hit-test)
-            const hitEls = scene.querySelectorAll('[ar-hit-test]');
-            if (!hitEls.length) return;
-
+          scene.addEventListener('click', () => {
             const template = document.querySelector('#snowman');
             if (!template) return;
+            if (!template.getObject3D('mesh')) {
+              console.warn('Snowman not yet loaded!');
+              return;
+            }
 
-            // For simplicity, place in front of camera
-            const camera = scene.camera.el.object3D;
-            const pos = camera.localToWorld(new THREE.Vector3(0, -0.5, -1));
+            // place 1m in front of camera
+            const cameraEl = scene.camera.el;
+            const cameraObj = cameraEl.object3D;
+            const pos = new THREE.Vector3(0, -0.5, -1);
+            cameraObj.localToWorld(pos);
 
             const clone = template.cloneNode(true);
             clone.setAttribute('visible', 'true');
             clone.object3D.position.copy(pos);
-
             scene.appendChild(clone);
           });
         }
@@ -45,30 +36,29 @@
     </script>
   </head>
 
-  <script>
-    console.log("GitHub Pages commit 7");
-  </script>
-
-  <a-box position="0 0.5 -2" rotation="0 45 0" color="#4CC3D9"></a-box>
-
-
   <body style="margin: 0; overflow: hidden;">
-<a-scene embedded>
-  <a-sky color="#ECECEC"></a-sky>
+    <a-scene embedded tap-to-place>
+      <!-- Camera -->
+      <a-camera position="0 1.6 0"></a-camera>
 
-  <!-- Snowman directly visible -->
-  <a-entity
-    gltf-model="assets/models/Snowman.gltf"
-    position="0 0 -2"
-    scale="0.2 0.2 0.2"
-    shadow="cast: true; receive: true">
-  </a-entity>
+      <!-- Snowman template -->
+      <a-entity
+        id="snowman"
+        gltf-model="assets/models/Snowman.gltf"
+        visible="false"
+        scale="0.2 0.2 0.2"
+        shadow="cast: true; receive: true">
+      </a-entity>
 
-  <a-light type="ambient" intensity="0.5"></a-light>
-  <a-light type="directional" intensity="1" position="1 2 1"></a-light>
+      <!-- Lights -->
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="directional" intensity="1" position="1 2 1"></a-light>
 
-  <a-camera></a-camera>
-</a-scene>
+      <!-- Ground -->
+      <a-plane rotation="-90 0 0" width="5" height="5" color="#7BC8A4" shadow></a-plane>
 
+      <!-- Sky -->
+      <a-sky color="#ECECEC"></a-sky>
+    </a-scene>
   </body>
 </html>
