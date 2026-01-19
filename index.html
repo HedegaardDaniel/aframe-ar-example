@@ -3,45 +3,34 @@
   <head>
     <meta charset="utf-8">
     <title>AR Snowman Fix</title>
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-    <script>
-      console.log("GitHub Pages commit 26");
-      // 1. Component to spawn snowmen
-      AFRAME.registerComponent('spawn-manager', {
-        init: function () {
-          const scene = this.el;
-          const reticle = document.querySelector('#reticle');
-
-          // Handle AR Tap
-          scene.addEventListener('ar-hit-test-select', () => {
-            if (reticle.getAttribute('visible')) {
-              this.spawn(reticle.getAttribute('position'));
-            }
-          });
-
-          // Handle Desktop/Fallback Tap
-          window.addEventListener('click', () => {
-            if (!scene.is('ar-mode')) {
-              this.spawn("0 0 -3");
-            }
-          });
-        },
-        spawn: function (pos) {
-          const entity = document.createElement('a-entity');
-          entity.setAttribute('gltf-model', '#snowman-model');
-          entity.setAttribute('scale', '0.2 0.2 0.2');
-          entity.setAttribute('position', pos);
-          this.el.appendChild(entity);
-        }
-      });
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js">
+            console.log("GitHub Pages commit 27");
     </script>
+    <style>
+      #ar-button {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        padding: 15px 30px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
   </head>
   <body style="margin: 0; overflow: hidden;">
     
+    <button id="ar-button">ENTER AR MODE</button>
+
     <a-scene 
-      webxr="requiredFeatures: hit-test, local-floor; referenceSpaceType: local; modes: ar"
+      webxr="optionalFeatures: hit-test, local-floor; referenceSpaceType: local;"
       renderer="alpha: true; colorManagement: true;"
-      spawn-manager
+      embedded
     >
       
       <a-assets>
@@ -57,10 +46,36 @@
       </a-entity>
 
       <a-light type="ambient" intensity="0.8"></a-light>
-      <a-light type="directional" position="1 2 1" intensity="0.5"></a-light>
-
       <a-camera position="0 1.6 0"></a-camera>
 
+      <script>
+        const sceneEl = document.querySelector('a-scene');
+        const btn = document.querySelector('#ar-button');
+
+        // Force Enter AR on button click
+        btn.addEventListener('click', () => {
+          sceneEl.enterVR(); // In A-Frame, enterVR() handles both VR and AR
+        });
+
+        // Hide button when in AR
+        sceneEl.addEventListener('enter-vr', () => {
+          if (sceneEl.is('ar-mode')) {
+            btn.style.display = 'none';
+          }
+        });
+
+        // Spawn logic
+        sceneEl.addEventListener('ar-hit-test-select', () => {
+          const reticle = document.querySelector('#reticle');
+          if (reticle.getAttribute('visible')) {
+            const snowman = document.createElement('a-entity');
+            snowman.setAttribute('gltf-model', '#snowman-model');
+            snowman.setAttribute('scale', '0.2 0.2 0.2');
+            snowman.setAttribute('position', reticle.getAttribute('position'));
+            sceneEl.appendChild(snowman);
+          }
+        });
+      </script>
     </a-scene>
   </body>
 </html>
